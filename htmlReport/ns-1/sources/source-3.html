@@ -1,0 +1,171 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > FXApplication</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">com.example.finaljavafxjunit</a>
+</div>
+
+<h1>Coverage Summary for Class: FXApplication (com.example.finaljavafxjunit)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">FXApplication</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/7)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    0%
+  </span>
+  <span class="absValue">
+    (0/18)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package com.example.finaljavafxjunit;
+&nbsp;
+&nbsp;import javafx.application.Application;
+&nbsp;import javafx.fxml.FXMLLoader;
+&nbsp;import javafx.scene.Parent;
+&nbsp;import javafx.scene.Scene;
+&nbsp;import javafx.stage.Stage;
+&nbsp;
+&nbsp;import java.io.IOException;
+&nbsp;import java.util.logging.Logger;
+&nbsp;
+<b class="nc">&nbsp;public class FXApplication extends Application {</b>
+&nbsp;//Extends javafx.application.Application and represents the JavaFX application.
+&nbsp;//Defines the start method, which is the main entry point for JavaFX applications. It initializes the primary stage, loads the main FXML file, and sets up the scene.
+&nbsp;//The loadMainScene method loads the main FXML file and sets up the scene.
+&nbsp;//The showPrimaryStage method sets the title and shows the primary stage.
+&nbsp;//The execute method is a static method that is called from Launcher.main. It checks whether a specific keyword (-config) is present in the command-line arguments. If so, it logs a message and launches the application using the provided ApplicationLauncher.
+&nbsp;    protected static ApplicationLauncher applicationLauncher;
+&nbsp;    protected Stage primaryStage;
+<b class="nc">&nbsp;    protected static Logger logger = Logger.getLogger((FXApplication.class.getName()));</b>
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public void start(Stage stage) throws IOException {
+&nbsp;        // Store the primary stage for later use
+<b class="nc">&nbsp;        primaryStage = stage;</b>
+&nbsp;
+&nbsp;        // Load the main application FXML file and set the controller, Controller.java class
+<b class="nc">&nbsp;        loadMainScene();</b>
+&nbsp;
+&nbsp;        // Show the main application window
+<b class="nc">&nbsp;        showPrimaryStage();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    protected void loadMainScene() throws IOException {
+<b class="nc">&nbsp;        FXMLLoader mainLoader = new FXMLLoader(getClass().getResource(&quot;hello-view.fxml&quot;));</b>
+<b class="nc">&nbsp;        Parent mainRoot = mainLoader.load();</b>
+&nbsp;
+<b class="nc">&nbsp;        Scene mainScene = new Scene(mainRoot);</b>
+<b class="nc">&nbsp;        mainScene.getStylesheets().add(&quot;styles.css&quot;);</b>
+<b class="nc">&nbsp;        primaryStage.setScene(mainScene);</b>
+&nbsp;    }
+&nbsp;    protected void showPrimaryStage() {
+<b class="nc">&nbsp;        primaryStage.setTitle(&quot;JMS Safe Configuration&quot;);</b>
+<b class="nc">&nbsp;        primaryStage.show();</b>
+&nbsp;    }
+&nbsp;    // Launch application
+&nbsp;//    public static void launchApplication(String[] args) {
+&nbsp;////        applicationLauncher.launch(args);
+&nbsp;//        Application.launch(args);
+&nbsp;//    }
+&nbsp;
+&nbsp;    // Main method for standalone execution
+&nbsp;    public static void execute(String[] args, ApplicationLauncher launcher) {
+<b class="nc">&nbsp;        if (keywordLaunch(args)) {</b>
+<b class="nc">&nbsp;            logger.info(&quot;Program GUI Started!&quot;);</b>
+&nbsp;//            launchApplication(args);
+<b class="nc">&nbsp;            launcher.launch(args);</b>
+&nbsp;        } else {
+<b class="nc">&nbsp;            logger.warning(&quot;Missing keyword. Use &#39;app.exe -config&#39; OR add keyword &#39;-config&#39; in Command Prompt&quot;);</b>
+<b class="nc">&nbsp;            System.exit(1);</b>
+&nbsp;        }
+&nbsp;    }
+&nbsp;
+&nbsp;    protected static boolean keywordLaunch(String[] args) {
+<b class="nc">&nbsp;        return args.length &gt; 0 &amp;&amp; args[0].equals(&quot;-config&quot;);</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2025-01-13 00:22</div>
+</div>
+</body>
+</html>
