@@ -1,0 +1,4 @@
+.locked-text-field {
+    -fx-control-inner-background: lightgrey;
+    -fx-text-inner-color: black;
+}
