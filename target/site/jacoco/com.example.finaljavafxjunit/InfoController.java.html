@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>InfoController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FinalJavaFxJunit</a> &gt; <a href="index.source.html" class="el_package">com.example.finaljavafxjunit</a> &gt; <span class="el_source">InfoController.java</span></div><h1>InfoController.java</h1><pre class="source lang-java linenums">package com.example.finaljavafxjunit;
+
+import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.stage.Stage;
+
+import javax.crypto.*;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.util.Arrays;
+import java.util.Base64;
+import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+<span class="nc" id="L25">public class InfoController {</span>
+
+    @FXML
+    private static final String SECRET_KEY = &quot;Willow@1&quot;;// Change this to your secret key
+    @FXML
+    private static final String SALT = &quot;Xentral&quot;;
+    @FXML
+    protected Label hostnameXProxyLabel, portXProxyLabel, versionXProxyLabel;
+    @FXML
+    protected Label serverLabel, hostnameDataLabel, portDataLabel, apiTokenLabel, providerLabel, apiVersionLabel;
+    @FXML
+    protected Label xjmsIntervalLabel, xjmsDebugLevelLabel;
+    @FXML
+    protected Label hostnameJmsLabel, portJmsLabel, usernameLabel, passwordLabel, subtopicLabel, pubtopicLabel;
+    @FXML
+    private Button returnJmsButton, returnDataButton;
+    @FXML
+    // Define a separator or identifier for each tab
+    protected static final String X_PROXY_IDENTIFIER = &quot;xproxy.&quot;;
+    @FXML
+    protected static final String DATA_SERVER_IDENTIFIER = &quot;xdataserver.&quot;;
+    @FXML
+    protected static final String JMS_SAFE_IDENTIFIER = &quot;xjms.&quot;;
+    @FXML
+    protected static final String JMS_PROVIDER_IDENTIFIER = &quot;jms-provider.&quot;;
+    @FXML
+    public Controller mainApplicationController;
+<span class="nc" id="L52">    @FXML</span>
+    protected Properties properties = new Properties();
+    @FXML
+    private static final String FILENAME = &quot;xjms.properties&quot;;
+    @FXML
+<span class="nc" id="L57">    protected static Logger logger = Logger.getLogger(InfoController.class.getName());</span>
+
+    public void initPropertyInfo() {
+        try {
+<span class="nc" id="L61">            loadPropertiesFromFile();</span>
+<span class="nc" id="L62">            setXProxyProperties();</span>
+<span class="nc" id="L63">            setDataServerProperties();</span>
+<span class="nc" id="L64">            setJmsSafeProperties();</span>
+<span class="nc" id="L65">            setJmsProviderProperties();</span>
+
+<span class="nc" id="L67">            setButtonActions();</span>
+<span class="nc" id="L68">            logger.log(Level.INFO, &quot;Properties initialized successfully.&quot;);</span>
+<span class="nc" id="L69">        } catch (RuntimeException e) {</span>
+<span class="nc" id="L70">            handleInitializeError(e);</span>
+<span class="nc" id="L71">        }</span>
+<span class="nc" id="L72">    }</span>
+    protected void setXProxyProperties() {
+<span class="nc" id="L74">        hostnameXProxyLabel.setText(properties.getProperty(X_PROXY_IDENTIFIER + &quot;ip&quot;));</span>
+<span class="nc" id="L75">        portXProxyLabel.setText(properties.getProperty(X_PROXY_IDENTIFIER + &quot;http-port&quot;));</span>
+<span class="nc" id="L76">        versionXProxyLabel.setText(properties.getProperty(X_PROXY_IDENTIFIER + &quot;version&quot;));</span>
+<span class="nc" id="L77">    }</span>
+    protected void setDataServerProperties() {
+<span class="nc" id="L79">        serverLabel.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + &quot;server-name&quot;));</span>
+<span class="nc" id="L80">        hostnameDataLabel.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + &quot;hostname&quot;));</span>
+<span class="nc" id="L81">        portDataLabel.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + &quot;http-port&quot;));</span>
+<span class="nc" id="L82">        apiTokenLabel.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + &quot;api-token&quot;));</span>
+<span class="nc" id="L83">        providerLabel.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + &quot;data-provider&quot;));</span>
+<span class="nc" id="L84">        apiVersionLabel.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + &quot;version&quot;));</span>
+<span class="nc" id="L85">    }</span>
+    protected void setJmsSafeProperties() {
+<span class="nc" id="L87">        xjmsIntervalLabel.setText(properties.getProperty(JMS_SAFE_IDENTIFIER + &quot;lifesign-interval&quot;));</span>
+<span class="nc" id="L88">        xjmsDebugLevelLabel.setText(properties.getProperty(JMS_SAFE_IDENTIFIER + &quot;debug-level&quot;));</span>
+<span class="nc" id="L89">    }</span>
+    protected void setJmsProviderProperties() {
+<span class="nc" id="L91">        hostnameJmsLabel.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + &quot;hostname&quot;));</span>
+<span class="nc" id="L92">        portJmsLabel.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + &quot;port&quot;));</span>
+<span class="nc" id="L93">        usernameLabel.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + &quot;username&quot;));</span>
+<span class="nc" id="L94">        passwordLabel.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + &quot;password&quot;));</span>
+<span class="nc" id="L95">        subtopicLabel.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + &quot;topic-sub&quot;));</span>
+<span class="nc" id="L96">        pubtopicLabel.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + &quot;topic-pub&quot;));</span>
+<span class="nc" id="L97">    }</span>
+    private void setButtonActions() {
+<span class="nc" id="L99">        returnJmsButton.setOnAction(event -&gt; returnToMain());</span>
+<span class="nc" id="L100">        returnDataButton.setOnAction(event -&gt; returnToMain());</span>
+<span class="nc" id="L101">    }</span>
+    //IOException, loadPropertiesFromFile()
+    private void handleLoadPropertiesError(Exception e) {
+<span class="nc" id="L104">        logger.log(Level.SEVERE, &quot;Error loading properties&quot;, e);</span>
+<span class="nc" id="L105">        showAndWaitAlert(Alert.AlertType.ERROR, &quot;LOAD ERROR&quot;,&quot;Error loading properties: &quot;, e.getMessage());</span>
+<span class="nc" id="L106">    }</span>
+    protected void handleInitializeError(Exception e) {
+<span class="nc" id="L108">        logger.log(Level.SEVERE, &quot;Error initialize properties&quot;, e);</span>
+<span class="nc" id="L109">        showAndWaitAlert(Alert.AlertType.ERROR, &quot;INITIALIZE ERROR&quot;,&quot;Error initialize properties: &quot;, e.getMessage());</span>
+<span class="nc" id="L110">    }</span>
+    protected void loadPropertiesFromFile() {
+<span class="nc" id="L112">        try (InputStream input = new FileInputStream(FILENAME)) {</span>
+<span class="nc" id="L113">            BufferedReader reader = new BufferedReader(new InputStreamReader(input));</span>
+<span class="nc" id="L114">            StringBuilder encryptedProperties = new StringBuilder();</span>
+            String line;
+<span class="nc bnc" id="L116" title="All 2 branches missed.">            while ((line = reader.readLine()) != null) {</span>
+<span class="nc" id="L117">                encryptedProperties.append(line);</span>
+            }
+
+            // Decrypt the encrypted properties
+<span class="nc" id="L121">            properties = decrypt(encryptedProperties.toString());</span>
+
+<span class="nc" id="L123">        } catch (IOException e) {</span>
+<span class="nc" id="L124">            logger.log(Level.SEVERE, &quot;Error loading properties&quot;, e);</span>
+<span class="nc" id="L125">            handleLoadPropertiesError(e);</span>
+<span class="nc" id="L126">        }</span>
+<span class="nc" id="L127">    }</span>
+
+//    private Properties decrypt(String encryptedProperties, Properties properties) {
+//        try {
+//            // Decode the Base64 string
+//            byte[] combined = Base64.getDecoder().decode(encryptedProperties);
+//
+//            // Extract IV and encrypted data
+//            byte[] iv = Arrays.copyOfRange(combined, 0, 12); // 12 bytes IV for GCM
+//            byte[] encryptedBytes = Arrays.copyOfRange(combined, 12, combined.length);
+//
+//            // Generate a secret key
+//            KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALT.getBytes(), 65536, 256);
+//            SecretKeyFactory factory = SecretKeyFactory.getInstance(&quot;PBKDF2WithHmacSHA1&quot;);
+//            SecretKey tmp = factory.generateSecret(spec);
+//            SecretKey secret = new SecretKeySpec(tmp.getEncoded(), &quot;AES&quot;);
+//
+//            // Create a Cipher instance with GCM mode and NoPadding
+//            Cipher cipher = Cipher.getInstance(&quot;AES/GCM/NoPadding&quot;);
+//            cipher.init(Cipher.DECRYPT_MODE, secret, new GCMParameterSpec(128, iv));
+//
+//            // Decrypt the data
+//            byte[] decryptedBytes = cipher.doFinal(encryptedBytes);
+//
+//            // Load the decrypted properties
+//            properties.load(new ByteArrayInputStream(decryptedBytes));
+//
+//        } catch (Exception e) {
+//            // Handle exceptions
+//            handleDecryptionError(e);
+//        }
+//        return properties;
+//    }
+//    private void handleDecryptionError(Exception e) {
+//        // Handle the decryption error more gracefully, show a user-friendly alert, etc.
+//        logger.log(Level.SEVERE, &quot;Error decrypting properties&quot;, e);
+//        showAndWaitAlert(Alert.AlertType.ERROR, &quot;DECRYPT ERROR&quot;,&quot;Error decrypt properties: &quot;, e.getMessage());
+//    }
+
+    //DECRYPT PROPERTIES : AES/GCM/NoPadding DECRYPTION
+    protected Properties decrypt(String encryptedProperties) {
+        try {
+<span class="nc" id="L169">            byte[] combined = Base64.getDecoder().decode(encryptedProperties);</span>
+<span class="nc" id="L170">            byte[] iv = Arrays.copyOfRange(combined, 0, 12);</span>
+<span class="nc" id="L171">            byte[] encryptedBytes = Arrays.copyOfRange(combined, 12, combined.length);</span>
+
+<span class="nc" id="L173">            SecretKey secret = generateSecretKey();</span>
+
+<span class="nc" id="L175">            byte[] decryptedBytes = performDecryption(secret, iv, encryptedBytes);</span>
+
+<span class="nc" id="L177">            loadProperties(properties, decryptedBytes);</span>
+
+<span class="nc" id="L179">        } catch (Exception e) {</span>
+<span class="nc" id="L180">            handleDecryptionError(e);</span>
+<span class="nc" id="L181">        }</span>
+<span class="nc" id="L182">        return properties;</span>
+    }
+    protected SecretKey generateSecretKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
+<span class="nc" id="L185">        KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALT.getBytes(), 65536, 256);</span>
+<span class="nc" id="L186">        SecretKeyFactory factory = SecretKeyFactory.getInstance(&quot;PBKDF2WithHmacSHA1&quot;);</span>
+<span class="nc" id="L187">        SecretKey tmp = factory.generateSecret(spec);</span>
+<span class="nc" id="L188">        return new SecretKeySpec(tmp.getEncoded(), &quot;AES&quot;);</span>
+    }
+    protected byte[] performDecryption(SecretKey secret, byte[] iv, byte[] encryptedBytes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+<span class="nc" id="L191">        Cipher cipher = Cipher.getInstance(&quot;AES/GCM/NoPadding&quot;);</span>
+<span class="nc" id="L192">        cipher.init(Cipher.DECRYPT_MODE, secret, new GCMParameterSpec(128, iv));</span>
+<span class="nc" id="L193">        return cipher.doFinal(encryptedBytes);</span>
+    }
+    private void loadProperties(Properties properties, byte[] decryptedBytes) throws IOException {
+<span class="nc" id="L196">        properties.load(new ByteArrayInputStream(decryptedBytes));</span>
+<span class="nc" id="L197">    }</span>
+    protected void handleDecryptionError(Exception e) {
+<span class="nc" id="L199">        logger.log(Level.SEVERE, &quot;Error decrypting properties&quot;, e.getCause());</span>
+<span class="nc" id="L200">        showAndWaitAlert(Alert.AlertType.ERROR, &quot;DECRYPT ERROR&quot;, &quot;Error loading properties: &quot;, e.getMessage());</span>
+<span class="nc" id="L201">    }</span>
+
+    protected void showAndWaitAlert(Alert.AlertType alertType, String title, String header, String content) {
+<span class="nc" id="L204">        Alert alert = createAlert(alertType, title, header, content);</span>
+<span class="nc" id="L205">        alert.showAndWait();</span>
+<span class="nc" id="L206">    }</span>
+
+    protected Alert createAlert(Alert.AlertType alertType, String title, String header, String content) {
+<span class="nc" id="L209">        Alert alert = new Alert(alertType);</span>
+<span class="nc" id="L210">        alert.setTitle(title);</span>
+<span class="nc" id="L211">        alert.setHeaderText(header);</span>
+<span class="nc" id="L212">        alert.setContentText(content);</span>
+<span class="nc" id="L213">        return alert;</span>
+    }
+    public void setMainApplicationController(Controller mainApplicationController) {
+<span class="nc" id="L216">        this.mainApplicationController = mainApplicationController;</span>
+<span class="nc" id="L217">    }</span>
+
+    @FXML
+    public void returnToMain() {
+<span class="nc" id="L221">        Stage stage = (Stage) returnJmsButton.getScene().getWindow();</span>
+<span class="nc" id="L222">        stage.close();</span>
+<span class="nc" id="L223">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

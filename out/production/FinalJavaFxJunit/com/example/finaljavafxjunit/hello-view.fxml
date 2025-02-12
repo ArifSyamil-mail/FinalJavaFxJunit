@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="600.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.finaljavafxjunit.Controller">
+  <tabs>
+    <Tab fx:id="tabData" text="Xentral">
+         <content>
+            <AnchorPane prefHeight="354.0" prefWidth="600.0">
+               <children>
+                  <Label alignment="CENTER" layoutX="86.0" layoutY="26.0" prefHeight="35.0" prefWidth="100.0" text="Xentral" AnchorPane.leftAnchor="86.0" AnchorPane.rightAnchor="414.0" AnchorPane.topAnchor="26.0">
+                     <font>
+                        <Font size="24.0" />
+                     </font>
+                  </Label>
+                  <VBox layoutX="100.0" layoutY="80.0" prefHeight="100.0" prefWidth="400.0">
+                     <children>
+                        <GridPane>
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                              <Label text="XProxy Server Hostname : " />
+                              <Label text="XProxy Server HTTP Port : " GridPane.rowIndex="1" />
+                              <Label text="XProxy Server Version :" GridPane.rowIndex="2" />
+                              <TextField fx:id="hostnameXProxyField" GridPane.columnIndex="1" />
+                              <TextField fx:id="portXProxyField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <TextField fx:id="versionXProxyField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                           </children>
+                        </GridPane>
+                     </children>
+                  </VBox>
+                  <VBox layoutX="100.0" layoutY="186.0" prefHeight="200.0" prefWidth="400.0" AnchorPane.bottomAnchor="185.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="186.0">
+                     <children>
+                        <GridPane>
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                              <Label text="Data Server Hostname : " GridPane.rowIndex="1" />
+                              <Label text="Data Server HTTP Port : " GridPane.rowIndex="2" />
+                              <Label text="Data Server API Token : " GridPane.rowIndex="3" />
+                              <Label text="Server Name : " />
+                              <Label text="Data Server API Data Provider : " GridPane.rowIndex="4" />
+                              <Label text="Data Server API Version :" GridPane.rowIndex="5" />
+                              <TextField fx:id="serverField" GridPane.columnIndex="1" />
+                              <TextField fx:id="hostnameDataField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <TextField fx:id="portDataField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <TextField fx:id="apiTokenField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <TextField fx:id="providerField" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                              <TextField fx:id="apiVersionField" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                           </children>
+                        </GridPane>
+                     </children>
+                  </VBox>
+                  <VBox layoutX="100.0" layoutY="386.0" prefHeight="70.0" prefWidth="400.0">
+                     <children>
+                        <GridPane>
+                           <columnConstraints>
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                              <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                           </columnConstraints>
+                           <rowConstraints>
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                           </rowConstraints>
+                           <children>
+                              <Label text="JMS Safe Lifesign Interval : " />
+                              <Label text="JMS Safe Debug Level : " GridPane.rowIndex="1" />
+                              <TextField GridPane.columnIndex="1" fx:id="xjmsIntervalField" />
+                              <TextField GridPane.columnIndex="1" GridPane.rowIndex="1" fx:id="xjmsDebugLevelField" />
+                           </children>
+                        </GridPane>
+                     </children>
+                  </VBox>
+                  <Button fx:id="saveEditDataButton" alignment="CENTER" contentDisplay="CENTER" layoutX="250.0" layoutY="489.0" mnemonicParsing="false" onAction="#readDataOnly" prefHeight="50.0" prefWidth="100.0" text="EDIT" />
+               </children>
+            </AnchorPane>
+         </content>
+    </Tab>
+    <Tab fx:id="tabJms" text="JMS Provider">
+         <content>
+        <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+               <children>
+                  <Label alignment="CENTER" layoutX="69.0" layoutY="57.0" text="JMS Provider" AnchorPane.leftAnchor="69.0" AnchorPane.rightAnchor="331.0" AnchorPane.topAnchor="57.0">
+                     <font>
+                        <Font size="24.0" />
+                     </font>
+                  </Label>
+                  <VBox layoutX="100.0" layoutY="128.0" prefHeight="250.0" prefWidth="400.0" AnchorPane.bottomAnchor="192.0" AnchorPane.leftAnchor="100.0" AnchorPane.rightAnchor="100.0" AnchorPane.topAnchor="128.0">
+                     <children>
+                        <GridPane>
+                          <columnConstraints>
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                            <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                          </columnConstraints>
+                          <rowConstraints>
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                            <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                              <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                          </rowConstraints>
+                           <children>
+                              <Label text="JMS Provider Hostname : " />
+                              <Label text="JMS Provider Port : " GridPane.rowIndex="1" />
+                              <Label text="Username : " GridPane.rowIndex="2" />
+                              <Label text="Password : " GridPane.rowIndex="3" />
+                              <Label text="Subscribed Topic : " GridPane.rowIndex="4" />
+                              <Label text="Published Topic : " GridPane.rowIndex="5" />
+                              <TextField fx:id="hostnameJmsField" GridPane.columnIndex="1" />
+                              <TextField fx:id="portJmsField" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                              <TextField fx:id="usernameField" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                              <PasswordField fx:id="passwordField" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                              <TextField fx:id="subtopicField" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                              <TextField fx:id="pubtopicField" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                           </children>
+                        </GridPane>
+                     </children>
+                  </VBox>
+                  <Button fx:id="saveEditJmsButton" layoutX="250.0" layoutY="445.0" mnemonicParsing="false" onAction="#readJmsOnly" prefHeight="50.0" prefWidth="100.0" text="EDIT" />
+               </children></AnchorPane>
+         </content>
+    </Tab>
+  </tabs>
+</TabPane>

@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FXApplication.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FinalJavaFxJunit</a> &gt; <a href="index.source.html" class="el_package">com.example.finaljavafxjunit</a> &gt; <span class="el_source">FXApplication.java</span></div><h1>FXApplication.java</h1><pre class="source lang-java linenums">package com.example.finaljavafxjunit;
+
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+import java.io.IOException;
+import java.util.logging.Logger;
+
+<span class="nc" id="L12">public class FXApplication extends Application {</span>
+//Extends javafx.application.Application and represents the JavaFX application.
+//Defines the start method, which is the main entry point for JavaFX applications. It initializes the primary stage, loads the main FXML file, and sets up the scene.
+//The loadMainScene method loads the main FXML file and sets up the scene.
+//The showPrimaryStage method sets the title and shows the primary stage.
+//The execute method is a static method that is called from Launcher.main. It checks whether a specific keyword (-config) is present in the command-line arguments. If so, it logs a message and launches the application using the provided ApplicationLauncher.
+    protected static ApplicationLauncher applicationLauncher;
+    protected Stage primaryStage;
+<span class="nc" id="L20">    protected static Logger logger = Logger.getLogger((FXApplication.class.getName()));</span>
+
+    @Override
+    public void start(Stage stage) throws IOException {
+        // Store the primary stage for later use
+<span class="nc" id="L25">        primaryStage = stage;</span>
+
+        // Load the main application FXML file and set the controller, Controller.java class
+<span class="nc" id="L28">        loadMainScene();</span>
+
+        // Show the main application window
+<span class="nc" id="L31">        showPrimaryStage();</span>
+<span class="nc" id="L32">    }</span>
+
+    protected void loadMainScene() throws IOException {
+<span class="nc" id="L35">        FXMLLoader mainLoader = new FXMLLoader(getClass().getResource(&quot;hello-view.fxml&quot;));</span>
+<span class="nc" id="L36">        Parent mainRoot = mainLoader.load();</span>
+
+<span class="nc" id="L38">        Scene mainScene = new Scene(mainRoot);</span>
+<span class="nc" id="L39">        mainScene.getStylesheets().add(&quot;styles.css&quot;);</span>
+<span class="nc" id="L40">        primaryStage.setScene(mainScene);</span>
+<span class="nc" id="L41">    }</span>
+    protected void showPrimaryStage() {
+<span class="nc" id="L43">        primaryStage.setTitle(&quot;JMS Safe Configuration&quot;);</span>
+<span class="nc" id="L44">        primaryStage.show();</span>
+<span class="nc" id="L45">    }</span>
+    // Launch application
+    public static void launchApplication(String[] args) {
+//        applicationLauncher.launch(args);
+<span class="nc" id="L49">        Application.launch(args);</span>
+<span class="nc" id="L50">    }</span>
+
+    // Main method for standalone execution
+    public static void execute(String[] args, ApplicationLauncher launcher) {
+//        if (keywordLaunch(args)) {
+//            logger.info(&quot;Program GUI Started!&quot;);
+//            launchApplication(args);
+//
+//        } else {
+//            logger.warning(&quot;Missing keyword. Use 'app.exe -config' OR add keyword '-config' in Command Prompt&quot;);
+//            System.exit(1);
+//        }
+
+// NO KEYWORD NEEDED
+<span class="nc" id="L64">        logger.info(&quot;Program GUI Started!&quot;);</span>
+<span class="nc" id="L65">                    launcher.launch(args);</span>
+<span class="nc" id="L66">    }</span>
+
+    protected static boolean keywordLaunch(String[] args) {
+<span class="nc bnc" id="L69" title="All 4 branches missed.">        return args.length &gt; 0 &amp;&amp; args[0].equals(&quot;-config&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>

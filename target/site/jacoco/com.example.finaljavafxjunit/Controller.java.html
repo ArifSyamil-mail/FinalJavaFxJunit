@@ -1,0 +1,696 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Controller.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FinalJavaFxJunit</a> &gt; <a href="index.source.html" class="el_package">com.example.finaljavafxjunit</a> &gt; <span class="el_source">Controller.java</span></div><h1>Controller.java</h1><pre class="source lang-java linenums">package com.example.finaljavafxjunit;
+
+import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+
+import javax.crypto.*;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.PBEKeySpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.io.*;
+import java.net.URL;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.KeySpec;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+<span class="fc" id="L30">public class Controller implements Initializable {</span>
+    @FXML
+    protected TextField hostnameXProxyField;
+    @FXML
+    protected TextField portXProxyField;
+    @FXML
+    protected TextField versionXProxyField;
+    @FXML
+    private TextField serverField, hostnameDataField, portDataField, apiTokenField, providerField, apiVersionField;
+    @FXML
+    private TextField xjmsDebugLevelField, xjmsIntervalField;
+
+    @FXML
+    protected TextField hostnameJmsField;
+    @FXML
+    protected TextField portJmsField;
+    @FXML
+    protected TextField usernameField;
+    @FXML
+    protected TextField subtopicField;
+    @FXML
+    protected TextField pubtopicField;
+    @FXML
+    protected PasswordField passwordField;
+    @FXML
+    private Button saveEditJmsButton, saveEditDataButton;
+<span class="fc" id="L56">    protected static boolean isJmsEditable = false;</span>
+<span class="fc" id="L57">    protected static boolean isDataEditable = false;</span>
+    private static final String SECRET_KEY = &quot;Willow@1&quot;; // Change this to your secret key
+    private static final String SALT = &quot;Xentral&quot;;
+<span class="fc" id="L60">    private Properties properties = new Properties();</span>
+
+    // Define a separator or identifier for each tab
+    private static final String X_PROXY_IDENTIFIER = &quot;xproxy.&quot;;
+    private static final String DATA_SERVER_IDENTIFIER = &quot;xdataserver.&quot;;
+    private static final String JMS_SAFE_IDENTIFIER = &quot;xjms.&quot;;
+    private static final String JMS_PROVIDER_IDENTIFIER = &quot;jms-provider.&quot;;
+    private static final String FILENAME = &quot;xjms.properties&quot;;
+    private static final String LOCKTEXT = &quot;locked-text-field&quot;;
+<span class="fc" id="L69">    protected static Logger logger = Logger.getLogger(Controller.class.getName());</span>
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        try {
+<span class="fc" id="L74">            loadPropertiesFromFile();</span>
+<span class="fc" id="L75">            setXProxyProperties(hostnameXProxyField, portXProxyField, versionXProxyField,</span>
+                    &quot;ip&quot;, &quot;http-port&quot;, &quot;version&quot;);
+<span class="fc" id="L77">            setDataServerProperties(serverField, hostnameDataField, portDataField, apiTokenField, providerField, apiVersionField,</span>
+                    &quot;server-name&quot;, &quot;hostname&quot;, &quot;http-port&quot;, &quot;api-token&quot;, &quot;data-provider&quot;, &quot;version&quot;);
+<span class="fc" id="L79">            setJmsSafeProperties(xjmsIntervalField, xjmsDebugLevelField,</span>
+                    &quot;lifesign-interval&quot;, &quot;debug-level&quot;);
+<span class="fc" id="L81">            setJmsProviderProperties(hostnameJmsField, portJmsField, usernameField, passwordField, subtopicField, pubtopicField,</span>
+                    &quot;hostname&quot;, &quot;port&quot;, &quot;username&quot;, &quot;password&quot;, &quot;topic-pub&quot;, &quot;topic-sub&quot;);
+
+<span class="fc" id="L84">            dataCheckXProxy();</span>
+<span class="fc" id="L85">            dataCheckDataServer();</span>
+<span class="fc" id="L86">            dataCheckJmsSafe();</span>
+<span class="fc" id="L87">            dataCheckJmsProvider();</span>
+
+<span class="fc" id="L89">            setButtonActions();</span>
+            //END
+<span class="nc" id="L91">        } catch (Exception e) {</span>
+<span class="nc" id="L92">            handleInitializeException(e);</span>
+<span class="fc" id="L93">        }</span>
+<span class="fc" id="L94">    }</span>
+
+    protected void handleInitializeException(Exception e) {
+<span class="nc" id="L97">        logger.log(Level.SEVERE, e.getMessage());</span>
+<span class="nc" id="L98">        showAndWaitAlert(Alert.AlertType.ERROR, &quot;Initialize Failed&quot;, &quot;Error initializing : &quot;, e.getMessage());</span>
+<span class="nc" id="L99">    }</span>
+
+    protected void setXProxyProperties(TextField hostnameXProxyField, TextField portXProxyField, TextField versionXProxyField,
+            String xProxyIp, String xProxyPort, String xProxyVersion) {
+<span class="fc" id="L103">        setStyleClassAndEditable(hostnameXProxyField, isDataEditable);</span>
+<span class="fc" id="L104">        setStyleClassAndEditable(portXProxyField, isDataEditable);</span>
+<span class="fc" id="L105">        setStyleClassAndEditable(versionXProxyField, isDataEditable);</span>
+
+<span class="fc" id="L107">        hostnameXProxyField.setText(properties.getProperty(X_PROXY_IDENTIFIER + xProxyIp));</span>
+<span class="fc" id="L108">        portXProxyField.setText(properties.getProperty(X_PROXY_IDENTIFIER + xProxyPort));</span>
+<span class="fc" id="L109">        versionXProxyField.setText(properties.getProperty(X_PROXY_IDENTIFIER + xProxyVersion));</span>
+<span class="fc" id="L110">    }</span>
+    protected void setDataServerProperties(
+            TextField serverField, TextField hostnameDataField, TextField portDataField, TextField apiTokenField, TextField providerField, TextField apiVersionField,
+            String dataServer, String dataHostname, String dataPort, String dataApiToken, String dataProvider, String dataApiVersion) {
+
+        //JMS PROVIDER TAB: JMS_PROVIDER_IDENTIFIER
+<span class="fc" id="L116">        setStyleClassAndEditable(serverField, isDataEditable);</span>
+<span class="fc" id="L117">        setStyleClassAndEditable(hostnameDataField, isDataEditable);</span>
+<span class="fc" id="L118">        setStyleClassAndEditable(portDataField, isDataEditable);</span>
+<span class="fc" id="L119">        setStyleClassAndEditable(apiTokenField, isDataEditable);</span>
+<span class="fc" id="L120">        setStyleClassAndEditable(providerField, isDataEditable);</span>
+<span class="fc" id="L121">        setStyleClassAndEditable(apiVersionField, isDataEditable);</span>
+
+<span class="fc" id="L123">        serverField.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + dataServer));</span>
+<span class="fc" id="L124">        hostnameDataField.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + dataHostname));</span>
+<span class="fc" id="L125">        portDataField.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + dataPort));</span>
+<span class="fc" id="L126">        apiTokenField.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + dataApiToken));</span>
+<span class="fc" id="L127">        providerField.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + dataProvider));</span>
+<span class="fc" id="L128">        apiVersionField.setText(properties.getProperty(DATA_SERVER_IDENTIFIER + dataApiVersion));</span>
+<span class="fc" id="L129">    }</span>
+    protected void setJmsSafeProperties(TextField xjmsIntervalField, TextField xjmsDebugLevelField,
+                                       String xjmsInterval, String xjmsDebug) {
+<span class="fc" id="L132">        setStyleClassAndEditable(xjmsIntervalField, isDataEditable);</span>
+<span class="fc" id="L133">        setStyleClassAndEditable(xjmsDebugLevelField, isDataEditable);</span>
+
+<span class="fc" id="L135">        xjmsIntervalField.setText(properties.getProperty(JMS_SAFE_IDENTIFIER + xjmsInterval));</span>
+<span class="fc" id="L136">        xjmsDebugLevelField.setText(properties.getProperty(JMS_SAFE_IDENTIFIER + xjmsDebug));</span>
+<span class="fc" id="L137">    }</span>
+    protected void setJmsProviderProperties(TextField hostnameJmsField, TextField portJmsField, TextField usernameField, TextField passwordField, TextField subtopicField, TextField pubtopicField,
+            String jmsIp, String jmsPort, String jmsUsername, String jmsPassword, String jmsSubtopic, String jmsPubtopic) {
+
+        //JMS PROVIDER TAB: JMS_PROVIDER_IDENTIFIER
+<span class="fc" id="L142">        setStyleClassAndEditable(hostnameJmsField, isJmsEditable);</span>
+<span class="fc" id="L143">        setStyleClassAndEditable(portJmsField, isJmsEditable);</span>
+<span class="fc" id="L144">        setStyleClassAndEditable(usernameField, isJmsEditable);</span>
+<span class="fc" id="L145">        setStyleClassAndEditable(passwordField, isJmsEditable);</span>
+<span class="fc" id="L146">        setStyleClassAndEditable(subtopicField, isJmsEditable);</span>
+<span class="fc" id="L147">        setStyleClassAndEditable(pubtopicField, isJmsEditable);</span>
+
+<span class="fc" id="L149">        hostnameJmsField.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + jmsIp));</span>
+<span class="fc" id="L150">        portJmsField.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + jmsPort));</span>
+<span class="fc" id="L151">        usernameField.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + jmsUsername));</span>
+<span class="fc" id="L152">        passwordField.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + jmsPassword));</span>
+<span class="fc" id="L153">        subtopicField.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + jmsSubtopic));</span>
+<span class="fc" id="L154">        pubtopicField.setText(properties.getProperty(JMS_PROVIDER_IDENTIFIER + jmsPubtopic));</span>
+<span class="fc" id="L155">    }</span>
+
+    private void setStyleClassAndEditable(TextField textField, boolean isDataEditable) {
+<span class="fc" id="L158">        textField.getStyleClass().add(LOCKTEXT);</span>
+<span class="fc" id="L159">        textField.setEditable(isDataEditable);</span>
+<span class="fc" id="L160">    }</span>
+    private void setButtonActions() {
+<span class="pc" id="L162">        saveEditDataButton.setOnAction(event -&gt; readDataOnly());</span>
+<span class="fc" id="L163">    }</span>
+
+    protected void dataCheckXProxy() {
+        //Create Alert Message JUST AFTER entering key
+        //XPROXY DATA VALIDATION
+<span class="fc" id="L168">        hostnameXProxyField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L169" title="All 4 branches missed.">            if (!isValidString(hostnameXProxyField.getText()) || hostnameXProxyField.getText().isEmpty()) {</span>
+<span class="nc" id="L170">                showAndWaitAlert(Alert.AlertType.WARNING, &quot;Text Type Mismatch&quot;, &quot;Text Error&quot;, &quot;TextField error in &quot; + &quot;'&quot; + hostnameXProxyField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L172">        });</span>
+<span class="fc" id="L173">        portXProxyField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L174" title="All 4 branches missed.">            if (!isValidInteger(portXProxyField.getText()) || portXProxyField.getText().isEmpty()) {</span>
+<span class="nc" id="L175">                showAndWaitAlert(Alert.AlertType.WARNING, &quot;Text Type Mismatch&quot;, &quot;Text Error&quot;, &quot;TextField error in &quot; + &quot;'&quot; + portXProxyField.getId() + &quot;'&quot; + &quot; : Input should be integer values between 1-65535&quot;);</span>
+            }
+<span class="nc" id="L177">        });</span>
+<span class="fc" id="L178">        versionXProxyField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L179" title="All 4 branches missed.">            if (!isValidString(versionXProxyField.getText()) || versionXProxyField.getText().isEmpty()) {</span>
+<span class="nc" id="L180">                showAndWaitAlert(Alert.AlertType.WARNING, &quot;Text Type Mismatch&quot;, &quot;Text Error&quot;, &quot;TextField error in &quot; + &quot;'&quot; + versionXProxyField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L182">        });</span>
+<span class="fc" id="L183">    }</span>
+    protected void dataCheckDataServer() {
+        //Create Alert Message JUST AFTER entering EVENT KEY -&gt;
+        //JMS PROVIDER DATA VALIDATION
+<span class="fc" id="L187">        serverField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L188" title="All 4 branches missed.">            if (!isValidString(serverField.getText()) || serverField.getText().isEmpty()) {</span>
+<span class="nc" id="L189">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + serverField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L191">        });</span>
+<span class="fc" id="L192">        hostnameDataField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L193" title="All 4 branches missed.">            if (!isValidString(hostnameDataField.getText()) || hostnameDataField.getText().isEmpty()) {</span>
+<span class="nc" id="L194">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + hostnameDataField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L196">        });</span>
+<span class="fc" id="L197">        portDataField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L198" title="All 4 branches missed.">            if (!isValidInteger(portDataField.getText()) || portDataField.getText().isEmpty()) {</span>
+<span class="nc" id="L199">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + portDataField.getId() + &quot;'&quot; + &quot; : Input should be integer values between 1-65535.&quot;);</span>
+            }
+<span class="nc" id="L201">        });</span>
+<span class="fc" id="L202">        apiTokenField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L203" title="All 4 branches missed.">            if (!isValidApi(apiTokenField.getText()) || apiTokenField.getText().isEmpty()) {</span>
+<span class="nc" id="L204">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + apiTokenField.getId() + &quot;'&quot; + &quot; : Input should not be more than 1023 characters.&quot;);</span>
+            }
+<span class="nc" id="L206">        });</span>
+<span class="fc" id="L207">        providerField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L208" title="All 4 branches missed.">            if (!isValidString(providerField.getText()) || providerField.getText().isEmpty()) {</span>
+<span class="nc" id="L209">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + providerField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L211">        });</span>
+<span class="fc" id="L212">        apiVersionField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L213" title="All 4 branches missed.">            if (!isValidString(apiVersionField.getText()) || apiVersionField.getText().isEmpty()) {</span>
+<span class="nc" id="L214">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + apiVersionField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L216">        });</span>
+<span class="fc" id="L217">    }</span>
+    protected void dataCheckJmsSafe() {
+        //Create Alert Message JUST AFTER entering key
+        //XPROXY DATA VALIDATION
+<span class="fc" id="L221">        xjmsIntervalField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L222" title="All 4 branches missed.">            if (!isValidInterval(xjmsIntervalField.getText()) || xjmsIntervalField.getText().isEmpty()) {</span>
+<span class="nc" id="L223">                showAndWaitAlert(Alert.AlertType.WARNING, &quot;Text Type Mismatch&quot;, &quot;Text Error&quot;, &quot;TextField error in &quot; + &quot;'&quot; + xjmsIntervalField.getId() + &quot;'&quot; + &quot; : Input should be integer values between 0-120.&quot;);</span>
+            }
+<span class="nc" id="L225">        });</span>
+<span class="fc" id="L226">        xjmsDebugLevelField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L227" title="All 4 branches missed.">            if (!isValidString(xjmsDebugLevelField.getText()) || xjmsDebugLevelField.getText().isEmpty()) {</span>
+<span class="nc" id="L228">                showAndWaitAlert(Alert.AlertType.WARNING, &quot;Text Type Mismatch&quot;, &quot;Text Error&quot;, &quot;TextField error in &quot; + &quot;'&quot; + xjmsDebugLevelField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L230">        });</span>
+<span class="fc" id="L231">    }</span>
+    protected void dataCheckJmsProvider() {
+        //Create Alert Message JUST AFTER entering EVENT KEY -&gt;
+        //JMS PROVIDER DATA VALIDATION
+<span class="fc" id="L235">        hostnameJmsField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L236" title="All 4 branches missed.">            if (!isValidString(hostnameJmsField.getText()) || hostnameJmsField.getText().isEmpty()) {</span>
+<span class="nc" id="L237">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + hostnameJmsField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L239">        });</span>
+<span class="fc" id="L240">        portJmsField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L241" title="All 4 branches missed.">            if (!isValidInteger(portJmsField.getText()) || portJmsField.getText().isEmpty()) {</span>
+<span class="nc" id="L242">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + portJmsField.getId() + &quot;'&quot; + &quot; : Input should be integer values between 1-65535&quot;);</span>
+            }
+<span class="nc" id="L244">        });</span>
+<span class="fc" id="L245">        usernameField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L246" title="All 4 branches missed.">            if (!isValidString(usernameField.getText()) || usernameField.getText().isEmpty()) {</span>
+<span class="nc" id="L247">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + usernameField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L249">        });</span>
+<span class="fc" id="L250">        passwordField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L251" title="All 4 branches missed.">            if (!isValidString(passwordField.getText()) || passwordField.getText().isEmpty()) {</span>
+<span class="nc" id="L252">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + passwordField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L254">        });</span>
+<span class="fc" id="L255">        subtopicField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L256" title="All 4 branches missed.">            if (!isValidString(subtopicField.getText()) || subtopicField.getText().isEmpty()) {</span>
+<span class="nc" id="L257">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + subtopicField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L259">        });</span>
+<span class="fc" id="L260">        pubtopicField.setOnKeyTyped(event -&gt; {</span>
+<span class="nc bnc" id="L261" title="All 4 branches missed.">            if (!isValidString(pubtopicField.getText()) || pubtopicField.getText().isEmpty()) {</span>
+<span class="nc" id="L262">                showAndWaitAlert(Alert.AlertType.WARNING, null, null, &quot;TextField error in &quot; + &quot;'&quot; + pubtopicField.getId() + &quot;'&quot; + &quot; : Input should not be more than 255 characters.&quot;);</span>
+            }
+<span class="nc" id="L264">        });</span>
+<span class="fc" id="L265">    }</span>
+
+    public void saveDataProperties() {
+        //Check for empty text fields
+<span class="pc bpc" id="L269" title="1 of 2 branches missed.">        if (areTextFieldsEmpty(</span>
+                hostnameXProxyField, portXProxyField, versionXProxyField,
+                serverField, hostnameDataField, portDataField, apiTokenField, providerField, apiVersionField,
+                xjmsIntervalField, xjmsDebugLevelField,
+                hostnameJmsField, portJmsField, usernameField, passwordField, subtopicField, pubtopicField)) {
+<span class="fc" id="L274">            showAndWaitAlert(Alert.AlertType.WARNING,&quot;SAVE WARNING&quot;,&quot;Please fill in all fields before saving.&quot;,&quot;Text fields is/are empty&quot;);</span>
+<span class="fc" id="L275">            return;</span>
+        }
+        //Check for valid string of &quot;hostname&quot;, &quot;version&quot;, 255 characters
+<span class="nc bnc" id="L278" title="All 2 branches missed.">        if (!areTextFieldsValidString(</span>
+<span class="nc" id="L279">                hostnameXProxyField.getText(), versionXProxyField.getText(),</span>
+<span class="nc" id="L280">                serverField.getText(), hostnameDataField.getText(), providerField.getText(), apiVersionField.getText(),</span>
+<span class="nc" id="L281">                xjmsDebugLevelField.getText())) {</span>
+<span class="nc" id="L282">            showAndWaitAlert(Alert.AlertType.WARNING, &quot;SAVE WARNING&quot;,</span>
+                    &quot;Error in TextField : &quot;
+<span class="nc" id="L284">                            + hostnameXProxyField.getId() + &quot; / &quot; + versionXProxyField.getId()</span>
+<span class="nc" id="L285">                            + serverField.getId() + &quot; / &quot; + hostnameDataField.getId() + providerField.getId() + &quot; / &quot; + apiVersionField.getId()</span>
+<span class="nc" id="L286">                            + xjmsDebugLevelField.getId(),</span>
+                    &quot;Input should not be more than 255 characters.&quot;);
+<span class="nc" id="L288">            return;</span>
+        }
+        //Check for integer type / values between 1-65535
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        if (!areTextFieldsValidInteger(portXProxyField.getText(), portDataField.getText())) {</span>
+<span class="nc" id="L292">            showAndWaitAlert(Alert.AlertType.WARNING, &quot;SAVE WARNING&quot;, &quot;Error in TextField : &quot; + portXProxyField.getId() + &quot; / &quot; + portDataField.getId() , &quot;Only integer values between 1-65535&quot;);</span>
+<span class="nc" id="L293">            return;</span>
+        }
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        if (!areTextFieldsValidApi(apiTokenField.getText())) {</span>
+<span class="nc" id="L296">            showAndWaitAlert(Alert.AlertType.WARNING, &quot;SAVE WARNING&quot;, &quot;Error in TextField : &quot; + portXProxyField.getId() , &quot;Input should not be more than 1023 characters.&quot;);</span>
+<span class="nc" id="L297">            return;</span>
+        }
+<span class="nc bnc" id="L299" title="All 2 branches missed.">        if (!areTextFieldsValidInterval(xjmsIntervalField.getText())) {</span>
+<span class="nc" id="L300">            showAndWaitAlert(Alert.AlertType.WARNING, &quot;SAVE WARNING&quot;, &quot;Error in TextField : &quot; + portXProxyField.getId() , &quot;Input should be integer values between 0-120.&quot;);</span>
+<span class="nc" id="L301">            return;</span>
+        }
+        // Set properties for DATA SERVER
+<span class="nc" id="L304">        properties.setProperty(X_PROXY_IDENTIFIER + &quot;ip&quot;, hostnameXProxyField.getText());</span>
+<span class="nc" id="L305">        properties.setProperty(X_PROXY_IDENTIFIER + &quot;http-port&quot;, portXProxyField.getText());</span>
+<span class="nc" id="L306">        properties.setProperty(X_PROXY_IDENTIFIER + &quot;version&quot;, versionXProxyField.getText());</span>
+
+<span class="nc" id="L308">        properties.setProperty(DATA_SERVER_IDENTIFIER + &quot;server-name&quot;, serverField.getText());</span>
+<span class="nc" id="L309">        properties.setProperty(DATA_SERVER_IDENTIFIER + &quot;hostname&quot;, hostnameDataField.getText());</span>
+<span class="nc" id="L310">        properties.setProperty(DATA_SERVER_IDENTIFIER + &quot;http-port&quot;, portDataField.getText());</span>
+<span class="nc" id="L311">        properties.setProperty(DATA_SERVER_IDENTIFIER + &quot;api-token&quot;, apiTokenField.getText());</span>
+<span class="nc" id="L312">        properties.setProperty(DATA_SERVER_IDENTIFIER + &quot;data-provider&quot;, providerField.getText());</span>
+<span class="nc" id="L313">        properties.setProperty(DATA_SERVER_IDENTIFIER + &quot;version&quot;, apiVersionField.getText());</span>
+
+<span class="nc" id="L315">        properties.setProperty(JMS_SAFE_IDENTIFIER + &quot;lifesign-interval&quot;, xjmsIntervalField.getText());</span>
+<span class="nc" id="L316">        properties.setProperty(JMS_SAFE_IDENTIFIER + &quot;debug-level&quot;, xjmsDebugLevelField.getText());</span>
+            //Call method savePropertiesToFile()
+            try {
+<span class="nc" id="L319">                savePropertiesToFile();</span>
+<span class="nc" id="L320">                showAndWaitAlert(Alert.AlertType.INFORMATION,&quot;SAVE SUCCESS&quot;,&quot;Properties saved successfully.&quot;,null);</span>
+<span class="nc" id="L321">                onSaveButtonClick();</span>
+<span class="nc" id="L322">            } catch (IOException e) {</span>
+<span class="nc" id="L323">                showAndWaitAlert(Alert.AlertType.ERROR,&quot;SAVE ERROR&quot;,&quot;Error saving properties: &quot;,e.getMessage());</span>
+<span class="nc" id="L324">                logger.log(Level.WARNING, e.getMessage());</span>
+<span class="nc" id="L325">            }</span>
+<span class="nc" id="L326">    }</span>
+
+    protected boolean areTextFieldsEmpty(TextField... textFields) {
+<span class="fc bfc" id="L329" title="All 2 branches covered.">        for (TextField textField : textFields) {</span>
+<span class="fc bfc" id="L330" title="All 2 branches covered.">            if (textField.getText().isEmpty()) {</span>
+<span class="fc" id="L331">                return true;</span>
+            }
+        }
+<span class="fc" id="L334">        return false;</span>
+    }
+
+    protected boolean areTextFieldsValidString(String... values) {
+<span class="fc bfc" id="L338" title="All 2 branches covered.">        for (String value : values) {</span>
+<span class="fc bfc" id="L339" title="All 2 branches covered.">            if (!isValidString(value)) {</span>
+<span class="fc" id="L340">                return false;</span>
+            }
+        }
+<span class="fc" id="L343">        return true;</span>
+    }
+    protected boolean areTextFieldsValidApi(String... values) {
+<span class="nc bnc" id="L346" title="All 2 branches missed.">        for (String value : values) {</span>
+<span class="nc bnc" id="L347" title="All 2 branches missed.">            if (!isValidApi(value)) {</span>
+<span class="nc" id="L348">                return false;</span>
+            }
+        }
+<span class="nc" id="L351">        return true;</span>
+    }
+    protected boolean areTextFieldsValidInteger(String... values) {
+<span class="fc bfc" id="L354" title="All 2 branches covered.">        for (String value : values) {</span>
+<span class="fc bfc" id="L355" title="All 2 branches covered.">            if (isValidInteger(value)) {</span>
+<span class="fc" id="L356">                return true;</span>
+            }
+        }
+<span class="fc" id="L359">        return false;</span>
+    }
+    protected boolean areTextFieldsValidInterval(String... values) {
+<span class="nc bnc" id="L362" title="All 2 branches missed.">        for (String value : values) {</span>
+<span class="nc bnc" id="L363" title="All 2 branches missed.">            if (isValidInterval(value)) {</span>
+<span class="nc" id="L364">                return true;</span>
+            }
+        }
+<span class="nc" id="L367">        return false;</span>
+    }
+
+    //Data validation and range for DATA SERVER TAB: hostname, servername, provider (255)
+    //Data validation and range for JMS PROVIDER TAB: hostname, username, password, subtopic, pubtopic (255)
+    protected boolean isValidString(String value){
+<span class="fc bfc" id="L373" title="All 2 branches covered.">        return value.length() &lt;= 255;</span>
+    }
+    //Data validation and range for api (1023)
+    protected boolean isValidApi(String value){
+<span class="nc bnc" id="L377" title="All 2 branches missed.">        return value.length() &lt;= 1023;</span>
+    }
+    //Data validation and range for portData &amp; portJms (1 - 65535)
+    protected boolean isValidInteger(String value) {
+        try {
+            // Try parsing the value as an integer
+<span class="fc" id="L383">            int intValue = Integer.parseInt(value);</span>
+            // Check if the parsed integer is within the specified range
+<span class="pc bpc" id="L385" title="1 of 4 branches missed.">            return intValue &gt;= 1 &amp;&amp; intValue &lt;= 65535;</span>
+<span class="fc" id="L386">        } catch (NumberFormatException e) {</span>
+            // The value is not a valid integer
+<span class="fc" id="L388">            return false;</span>
+        }
+    }
+
+    protected int parseInt(String value){
+<span class="fc" id="L393">        return Integer.parseInt(value);</span>
+    }
+    //Data validation for &quot;interval&quot;, (0 - 60) - OLD
+    //Data validation for &quot;interval&quot;, (0 - 120) - NEW
+    private boolean isValidInterval(String value) {
+        try {
+            // Try parsing the value as an integer
+<span class="nc" id="L400">            int intValue = Integer.parseInt(value);</span>
+            // Check if the parsed integer is within the specified range
+<span class="nc bnc" id="L402" title="All 4 branches missed.">            return intValue &gt;= 0 &amp;&amp; intValue &lt;= 120;</span>
+<span class="nc" id="L403">        } catch (NumberFormatException e) {</span>
+            // The value is not a valid integer
+<span class="nc" id="L405">            return false;</span>
+        }
+    }
+
+
+    @FXML
+    public void saveJmsProperties() {
+        //Check for empty text fields
+<span class="nc bnc" id="L413" title="All 2 branches missed.">        if (areTextFieldsEmpty(hostnameJmsField, usernameField, passwordField, subtopicField, pubtopicField)) {</span>
+<span class="nc" id="L414">            showAndWaitAlert(Alert.AlertType.WARNING,&quot;SAVE WARNING&quot;,&quot;Please fill in all fields before saving.&quot;,&quot;Text fields is/are empty&quot;);</span>
+<span class="nc" id="L415">            return;</span>
+        }
+        //Check for valid string of &quot;hostname&quot;, &quot;username&quot;, &quot;password&quot;, &quot;subtopic&quot;, &quot;pubtopic&quot;, 255 characters
+<span class="nc bnc" id="L418" title="All 2 branches missed.">        if (!areTextFieldsValidString(hostnameJmsField.getText(), usernameField.getText(), passwordField.getText(), subtopicField.getText(), pubtopicField.getText())) {</span>
+<span class="nc" id="L419">            showAndWaitAlert(Alert.AlertType.WARNING,</span>
+                    &quot;SAVE WARNING&quot;,
+<span class="nc" id="L421">                    &quot;Error in TextField : &quot; + hostnameJmsField.getId() + &quot; / &quot; + usernameField.getId() + &quot; / &quot; + passwordField.getId() + &quot; / &quot; + subtopicField.getId() + &quot; / &quot; + pubtopicField.getId() ,</span>
+                    &quot;Input should not be more than 255 characters.&quot;);
+<span class="nc" id="L423">            return;</span>
+        }
+        //Check for integer type / values between 1-65535
+<span class="nc bnc" id="L426" title="All 2 branches missed.">        if (!isValidInteger(portJmsField.getText())) {</span>
+<span class="nc" id="L427">            showAndWaitAlert(Alert.AlertType.WARNING, &quot;SAVE WARNING&quot;, &quot;Error in TextField : &quot; + portJmsField.getId() , &quot;Only integer values between 1-65535&quot;);</span>
+<span class="nc" id="L428">            return;</span>
+        }
+        // Set properties for JMS PROVIDER
+<span class="nc" id="L431">        properties.setProperty(JMS_PROVIDER_IDENTIFIER + &quot;hostname&quot;, hostnameJmsField.getText());</span>
+<span class="nc" id="L432">        properties.setProperty(JMS_PROVIDER_IDENTIFIER + &quot;port&quot;, portJmsField.getText());</span>
+<span class="nc" id="L433">        properties.setProperty(JMS_PROVIDER_IDENTIFIER + &quot;username&quot;, usernameField.getText());</span>
+<span class="nc" id="L434">        properties.setProperty(JMS_PROVIDER_IDENTIFIER + &quot;password&quot;, passwordField.getText());</span>
+<span class="nc" id="L435">        properties.setProperty(JMS_PROVIDER_IDENTIFIER + &quot;topic-sub&quot;, subtopicField.getText());</span>
+<span class="nc" id="L436">        properties.setProperty(JMS_PROVIDER_IDENTIFIER + &quot;topic-pub&quot;, pubtopicField.getText());</span>
+
+        //Call method savePropertiesToFile()
+        try {
+<span class="nc" id="L440">            savePropertiesToFile();</span>
+<span class="nc" id="L441">            showAndWaitAlert(Alert.AlertType.INFORMATION,&quot;SAVE SUCCESS&quot;,&quot;Properties saved successfully.&quot;,null);</span>
+<span class="nc" id="L442">            onSaveButtonClick();</span>
+<span class="nc" id="L443">        } catch (IOException e) {</span>
+<span class="nc" id="L444">            showAndWaitAlert(Alert.AlertType.ERROR,&quot;SAVE ERROR&quot;,&quot;Error saving properties: &quot;,e.getMessage());</span>
+<span class="nc" id="L445">            logger.log(Level.WARNING, e.getMessage());</span>
+<span class="nc" id="L446">        }</span>
+<span class="nc" id="L447">    }</span>
+
+    protected String encrypt(String value) {
+        try {
+            // ... existing code ...
+            // Generate a secure random IV
+<span class="fc" id="L453">            SecureRandom random = new SecureRandom();</span>
+<span class="fc" id="L454">            byte[] iv = new byte[12]; // 12 bytes IV for GCM</span>
+<span class="fc" id="L455">            random.nextBytes(iv);</span>
+            // Generate a secret key
+<span class="fc" id="L457">            SecretKey secret = generateSecretKey();</span>
+
+            // Extract the encryption logic into a separate method
+<span class="fc" id="L460">            byte[] encryptedBytes = performEncryption(value, secret, iv);</span>
+
+            // Combine IV and encrypted data and encode as Base64 string
+<span class="fc" id="L463">            byte[] combined = combineIVAndEncryptedData(iv, encryptedBytes);</span>
+
+<span class="fc" id="L465">            return Base64.getEncoder().encodeToString(combined);</span>
+<span class="fc" id="L466">        } catch (Exception e) {</span>
+            // Handle exceptions
+<span class="nc" id="L468">            handleEncryptionException(e);</span>
+<span class="nc" id="L469">            return &quot;&quot;;</span>
+        }
+    }
+
+    // Separate method for encryption logic
+    protected static byte[] performEncryption(String value, SecretKey secret, byte[] iv) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+<span class="fc" id="L475">        Cipher cipher = Cipher.getInstance(&quot;AES/GCM/NoPadding&quot;);</span>
+<span class="fc" id="L476">        cipher.init(Cipher.ENCRYPT_MODE, secret, new GCMParameterSpec(128, iv));</span>
+<span class="fc" id="L477">        return cipher.doFinal(value.getBytes());</span>
+    }
+
+    // Separate method for combining IV and encrypted data
+    protected byte[] combineIVAndEncryptedData(byte[] iv, byte[] encryptedBytes) {
+<span class="nc" id="L482">        byte[] combined = new byte[iv.length + encryptedBytes.length];</span>
+<span class="nc" id="L483">        System.arraycopy(iv, 0, combined, 0, iv.length);</span>
+<span class="nc" id="L484">        System.arraycopy(encryptedBytes, 0, combined, iv.length, encryptedBytes.length);</span>
+<span class="nc" id="L485">        return combined;</span>
+    }
+    protected void handleEncryptionException(Exception e) {
+<span class="fc" id="L488">        logger.log(Level.SEVERE, &quot;Error encrypting properties&quot;, e.getCause());</span>
+<span class="nc" id="L489">        showAndWaitAlert(Alert.AlertType.ERROR, &quot;DECRYPT ERROR&quot;, &quot;Error loading properties: &quot;, e.getMessage());</span>
+<span class="nc" id="L490">    }</span>
+    protected SecretKey generateSecretKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
+<span class="fc" id="L492">        KeySpec spec = new PBEKeySpec(SECRET_KEY.toCharArray(), SALT.getBytes(), 65536, 256);</span>
+<span class="fc" id="L493">        SecretKeyFactory factory = SecretKeyFactory.getInstance(&quot;PBKDF2WithHmacSHA1&quot;);</span>
+<span class="fc" id="L494">        SecretKey tmp = factory.generateSecret(spec);</span>
+<span class="fc" id="L495">        return new SecretKeySpec(tmp.getEncoded(), &quot;AES&quot;);</span>
+    }
+    //DECRYPT PROPERTIES : AES/GCM/NoPadding DECRYPTION
+    protected Properties decrypt(String encryptedProperties) {
+        try {
+<span class="fc" id="L500">            byte[] combined = Base64.getDecoder().decode(encryptedProperties);</span>
+<span class="fc" id="L501">            byte[] iv = Arrays.copyOfRange(combined, 0, 12);</span>
+<span class="fc" id="L502">            byte[] encryptedBytes = Arrays.copyOfRange(combined, 12, combined.length);</span>
+
+<span class="fc" id="L504">            SecretKey secret = generateSecretKey();</span>
+
+<span class="fc" id="L506">            byte[] decryptedBytes = performDecryption(secret, iv, encryptedBytes);</span>
+
+<span class="fc" id="L508">            loadProperties(properties, decryptedBytes);</span>
+
+<span class="nc" id="L510">        } catch (Exception e) {</span>
+<span class="nc" id="L511">            handleDecryptionException(e);</span>
+<span class="fc" id="L512">        }</span>
+<span class="fc" id="L513">        return properties;</span>
+    }
+
+    protected byte[] performDecryption(SecretKey secret, byte[] iv, byte[] encryptedBytes) throws NoSuchPaddingException, NoSuchAlgorithmException, InvalidAlgorithmParameterException, InvalidKeyException, IllegalBlockSizeException, BadPaddingException {
+<span class="fc" id="L517">        Cipher cipher = Cipher.getInstance(&quot;AES/GCM/NoPadding&quot;);</span>
+<span class="fc" id="L518">        cipher.init(Cipher.DECRYPT_MODE, secret, new GCMParameterSpec(128, iv));</span>
+<span class="fc" id="L519">        return cipher.doFinal(encryptedBytes);</span>
+    }
+
+    protected void loadProperties(Properties properties, byte[] decryptedBytes) throws IOException {
+<span class="fc" id="L523">        properties.load(new ByteArrayInputStream(decryptedBytes));</span>
+<span class="fc" id="L524">    }</span>
+
+    protected void handleDecryptionException(Exception e) {
+<span class="nc" id="L527">        logger.log(Level.SEVERE, &quot;Error decrypting properties&quot;, e.getCause());</span>
+<span class="nc" id="L528">        showAndWaitAlert(Alert.AlertType.ERROR, &quot;DECRYPT ERROR&quot;, &quot;Error loading properties: &quot;, e.getMessage());</span>
+<span class="nc" id="L529">    }</span>
+
+//        private void showAlert(Alert.AlertType alertType, String title, String header, String content) {
+//            Alert alert = createAlert(alertType, title, header, content);
+//            if (alertType == Alert.AlertType.ERROR) {
+//                alert.showAndWait();
+//            } else {
+//                alert.show();
+//            }
+//        }
+
+    protected void showAndWaitAlert(Alert.AlertType alertType, String title, String header, String content) {
+<span class="fc" id="L541">        Alert alert = createAlert(alertType, title, header, content);</span>
+<span class="nc" id="L542">        alert.showAndWait();</span>
+<span class="nc" id="L543">    }</span>
+
+    protected Alert createAlert(Alert.AlertType alertType, String title, String header, String content) {
+<span class="fc" id="L546">        Alert alert = new Alert(alertType);</span>
+<span class="fc" id="L547">        alert.setTitle(title);</span>
+<span class="fc" id="L548">        alert.setHeaderText(header);</span>
+<span class="fc" id="L549">        alert.setContentText(content);</span>
+<span class="fc" id="L550">        return alert;</span>
+    }
+
+    private void savePropertiesToFile() {
+<span class="nc" id="L554">        try (OutputStream output = new FileOutputStream(FILENAME)) {</span>
+            // Serialize the properties
+<span class="nc" id="L556">            ByteArrayOutputStream serializedProperties = new ByteArrayOutputStream();</span>
+<span class="nc" id="L557">            properties.store(serializedProperties, &quot;&quot;);</span>
+
+            // Encrypt the serialized properties
+<span class="nc" id="L560">            String encryptedProperties = encrypt(serializedProperties.toString());</span>
+<span class="nc" id="L561">            logger.info(&quot;Encrypted Properties : &quot; + encryptedProperties + &quot;\n&quot;);</span>
+            // Save the encrypted properties to the file
+<span class="nc" id="L563">            output.write(encryptedProperties.getBytes());</span>
+<span class="nc" id="L564">            loadPropertiesFromFile();</span>
+<span class="nc" id="L565">        } catch (IOException e) {</span>
+<span class="nc" id="L566">            handleSavePropertiesException(e);</span>
+<span class="nc" id="L567">        }</span>
+<span class="nc" id="L568">    }</span>
+    private void handleSavePropertiesException(Exception e) {
+<span class="nc" id="L570">        logger.log(Level.SEVERE, &quot;Error saving properties&quot;, e.getCause());</span>
+<span class="nc" id="L571">        showAndWaitAlert(Alert.AlertType.ERROR, &quot;SAVE ERROR&quot;, &quot;Error saving properties: &quot;, e.getMessage());</span>
+<span class="nc" id="L572">    }</span>
+    protected void loadPropertiesFromFile() {
+<span class="fc" id="L574">        try (InputStream input = new FileInputStream(FILENAME)) {</span>
+<span class="fc" id="L575">            BufferedReader reader = new BufferedReader(new InputStreamReader(input));</span>
+<span class="fc" id="L576">            StringBuilder encryptedProperties = new StringBuilder();</span>
+            String line;
+<span class="fc bfc" id="L578" title="All 2 branches covered.">            while ((line = reader.readLine()) != null) {</span>
+<span class="fc" id="L579">                encryptedProperties.append(line);</span>
+            }
+            // Decrypt the encrypted properties
+<span class="fc" id="L582">            properties = decrypt(encryptedProperties.toString());</span>
+<span class="fc" id="L583">            logger.info(&quot;Decrypted Properties : \n&quot;);</span>
+            //Create a TreeMap to arrange the Properties Object in alphabetical order
+<span class="fc" id="L585">            TreeMap&lt;String, String&gt; propMap = new TreeMap&lt;&gt;((Map) properties);</span>
+            Set&lt;Map.Entry&lt;String, String&gt;&gt; propSet;
+<span class="fc" id="L587">            propSet = propMap.entrySet();</span>
+            //Print the output
+<span class="fc bfc" id="L589" title="All 2 branches covered.">            for (Map.Entry&lt;String, String&gt; entry : propSet) {</span>
+<span class="fc" id="L590">                System.out.println(entry.getKey() + &quot; = &quot; + entry.getValue());</span>
+<span class="fc" id="L591">            }</span>
+
+<span class="nc" id="L593">        } catch (IOException e) {</span>
+<span class="nc" id="L594">            handleLoadPropertiesException(e);</span>
+<span class="fc" id="L595">        }</span>
+<span class="fc" id="L596">    }</span>
+    private void handleLoadPropertiesException(Exception e) {
+<span class="nc" id="L598">        logger.log(Level.SEVERE, &quot;Error loading properties&quot;, e.getCause());</span>
+<span class="nc" id="L599">        showAndWaitAlert(Alert.AlertType.ERROR,&quot;LOAD ERROR&quot;, &quot;Error message: &quot;,&quot;A new file named \&quot;xjms.properties\&quot; will be created when entering and saving input.&quot;);</span>
+<span class="nc" id="L600">    }</span>
+    public void readDataOnly(){
+<span class="nc bnc" id="L602" title="All 2 branches missed.">        isDataEditable = !isDataEditable;</span>
+<span class="nc" id="L603">        toggleDataEditableFields(hostnameXProxyField, portXProxyField, versionXProxyField);</span>
+<span class="nc" id="L604">        toggleDataEditableFields(serverField, hostnameDataField, portDataField, apiTokenField, providerField, apiVersionField);</span>
+<span class="nc" id="L605">        toggleDataEditableFields(xjmsIntervalField, xjmsDebugLevelField);</span>
+<span class="nc bnc" id="L606" title="All 2 branches missed.">        if(isDataEditable) {</span>
+<span class="nc" id="L607">            saveEditDataButton.setText(&quot;SAVE&quot;);</span>
+<span class="nc" id="L608">            showAndWaitAlert(Alert.AlertType.WARNING,&quot;EDIT WARNING&quot;, &quot;Edit enable&quot;,&quot;Text fields UNLOCKED.&quot;);</span>
+        } else {
+<span class="nc" id="L610">            saveEditDataButton.setText(&quot;EDIT&quot;);</span>
+<span class="nc" id="L611">            showAndWaitAlert(Alert.AlertType.WARNING,&quot;EDIT WARNING&quot;, &quot;Edit disabled&quot;,&quot;Text fields LOCKED.&quot;);</span>
+<span class="nc" id="L612">            saveDataProperties();</span>
+        }
+<span class="nc" id="L614">    }</span>
+    public void readJmsOnly(){
+<span class="nc bnc" id="L616" title="All 2 branches missed.">        isJmsEditable = !isJmsEditable;</span>
+<span class="nc" id="L617">        toggleJmsEditableFields(hostnameJmsField, portJmsField, usernameField, passwordField, subtopicField, pubtopicField);</span>
+
+<span class="nc bnc" id="L619" title="All 2 branches missed.">        if(isJmsEditable) {</span>
+<span class="nc" id="L620">            saveEditJmsButton.setText(&quot;SAVE&quot;);</span>
+<span class="nc" id="L621">            showAndWaitAlert(Alert.AlertType.WARNING,&quot;EDIT WARNING&quot;, &quot;Edit enable&quot;,&quot;Text fields UNLOCKED.&quot;);</span>
+        } else {
+<span class="nc" id="L623">            saveEditJmsButton.setText(&quot;EDIT&quot;);</span>
+<span class="nc" id="L624">            showAndWaitAlert(Alert.AlertType.WARNING,&quot;EDIT WARNING&quot;, &quot;Edit disabled&quot;,&quot;Text fields LOCKED.&quot;);</span>
+<span class="nc" id="L625">            saveJmsProperties();</span>
+        }
+<span class="nc" id="L627">    }</span>
+    private void toggleDataEditableFields(TextField... textFields) {
+<span class="nc bnc" id="L629" title="All 2 branches missed.">        for (TextField textField : textFields) {</span>
+<span class="nc" id="L630">            textField.setEditable(isDataEditable);</span>
+<span class="nc bnc" id="L631" title="All 2 branches missed.">            if (isDataEditable) {</span>
+<span class="nc" id="L632">                textField.getStyleClass().remove(LOCKTEXT);</span>
+            } else {
+<span class="nc" id="L634">                textField.getStyleClass().add(LOCKTEXT);</span>
+            }
+        }
+<span class="nc" id="L637">    }</span>
+    private void toggleJmsEditableFields(TextField... textFields) {
+<span class="nc bnc" id="L639" title="All 2 branches missed.">        for (TextField textField : textFields) {</span>
+<span class="nc" id="L640">            textField.setEditable(isJmsEditable);</span>
+<span class="nc bnc" id="L641" title="All 2 branches missed.">            if (isJmsEditable) {</span>
+<span class="nc" id="L642">                textField.getStyleClass().remove(LOCKTEXT);</span>
+            } else {
+<span class="nc" id="L644">                textField.getStyleClass().add(LOCKTEXT);</span>
+            }
+        }
+<span class="nc" id="L647">    }</span>
+
+    @FXML
+    public void onSaveButtonClick() throws IOException {
+<span class="nc" id="L651">        Stage propertyInfoStage = createPropertyInfoStage();</span>
+<span class="nc" id="L652">        FXMLLoader loader = createFXMLLoader();</span>
+<span class="nc" id="L653">        Parent root = loadFXML(loader);</span>
+
+<span class="nc" id="L655">        InfoController propertyInfoController = loader.getController();</span>
+<span class="nc" id="L656">        initializeInfoController(propertyInfoController);</span>
+
+<span class="nc" id="L658">        propertyInfoStage.setTitle(&quot;JMS Safe Configuration: PROPERTIES INFO&quot;);</span>
+<span class="nc" id="L659">        propertyInfoStage.setScene(new Scene(root));</span>
+<span class="nc" id="L660">        propertyInfoStage.show();</span>
+<span class="nc" id="L661">    }</span>
+
+    protected Stage createPropertyInfoStage() {
+<span class="nc" id="L664">        return new Stage();</span>
+    }
+
+    protected FXMLLoader createFXMLLoader() {
+<span class="nc" id="L668">        return new FXMLLoader(getClass().getResource(&quot;display.fxml&quot;));</span>
+    }
+
+    private Parent loadFXML(FXMLLoader loader) throws IOException {
+<span class="nc" id="L672">        return loader.load();</span>
+    }
+
+    protected void initializeInfoController(InfoController controller) {
+<span class="nc" id="L676">        controller.initPropertyInfo();</span>
+<span class="nc" id="L677">        controller.setMainApplicationController(this);</span>
+<span class="nc" id="L678">    }</span>
+    @FXML
+    public void onSaveButtonClick2() throws IOException {
+        // Load the new GUI for property information
+<span class="nc" id="L682">        Stage propertyInfoStage = new Stage();</span>
+<span class="nc" id="L683">        FXMLLoader loader = new FXMLLoader(getClass().getResource(&quot;display.fxml&quot;));</span>
+<span class="nc" id="L684">        Parent root = loader.load();</span>
+        // Set the controller for the new GUI
+<span class="nc" id="L686">        InfoController propertyInfoController = loader.getController();</span>
+<span class="nc" id="L687">        propertyInfoController.initPropertyInfo(); // Pass property data</span>
+<span class="nc" id="L688">        propertyInfoController.setMainApplicationController(this); // Pass a reference to the MainApplication controller</span>
+        //Display GUI
+<span class="nc" id="L690">        propertyInfoStage.setTitle(&quot;JMS Safe Configuration: PROPERTIES INFO&quot;);</span>
+<span class="nc" id="L691">        propertyInfoStage.setScene(new Scene(root));</span>
+<span class="nc" id="L692">        propertyInfoStage.show();</span>
+<span class="nc" id="L693">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span></div></body></html>
